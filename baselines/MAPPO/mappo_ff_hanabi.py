@@ -449,6 +449,10 @@ def make_train(config):
             train_states = update_state[0]
             metric = traj_batch.info
             loss_info["ratio_0"] = loss_info["ratio"].at[0,0].get()
+            y_true, y_pred = targets.flatten(), traj_batch.value.flatten()
+            var_y = jnp.var(y_true)
+            explained_var = jnp.where(var_y == 0, jnp.nan, 1 - jnp.var(y_true - y_pred) / var_y)
+            loss_info['explained_var'] = explained_var
             loss_info = jax.tree.map(lambda x: x.mean(), loss_info)
             metric["loss"] = loss_info
             rng = update_state[-1]
